@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+{% include 'includes/_back_button.html' %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    {% if action == 'create' %}
+                        <h2>Create New Event</h2>
+                    {% else %}
+                        <h2>Update Event: {{ event.title }}</h2>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <form method="post" id="event-form">
+                        {% csrf_token %}
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <strong>Please correct the errors below.</strong>
+                            </div>
+                        {% endif %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {{ field.label_tag }}
+                                {% if field.errors %}
+                                    {{ field|add_class:"form-control is-invalid" }}
+                                {% else %}
+                                    {{ field|add_class:"form-control" }}
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Duration</label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="number" id="hours" class="form-control" placeholder="Hours" min="0">
+                                </div>
+                                <div class="col">
+                                    <input type="number" id="minutes" class="form-control" placeholder="Minutes" min="0" max="59">
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="duration" id="duration">
+
+                        <button type="submit" class="btn btn-primary">
+                            {% if action == 'create' %}Create Event{% else %}Update Event{% endif %}
+                        </button>
+                        <a href="{% url 'organizer_dashboard' %}" class="btn btn-secondary ms-2">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.getElementById('event-form').addEventListener('submit', function(e) {
+        const hours = document.getElementById('hours').value;
+        const minutes = document.getElementById('minutes').value;
+        const totalMinutes = (parseInt(hours) || 0) * 60 + (parseInt(minutes) || 0);
+        document.getElementById('duration').value = totalMinutes;
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

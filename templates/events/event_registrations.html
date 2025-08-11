@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>{{ event.title }} - Registrations</h2>
+                <p class="text-muted">Total Registrations: {{ registrations|length }}/{{ event.max_participants }}</p>
+            </div>
+            <a href="{% url 'organizer_dashboard' %}" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5>Registered Participants</h5>
+            </div>
+            <div class="card-body">
+                {% if registrations %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped border">
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Registration Date</th>
+                                <th>Attendance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registration in registrations %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if registration.participant.profile_picture %}
+                                            <img src="{{ registration.participant.profile_picture.url }}" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture">
+                                        {% else %}
+                                            <i class="fas fa-user-circle fa-2x text-muted me-2"></i>
+                                        {% endif %}
+                                        <div>
+                                            <strong>{{ registration.participant.get_full_name|default:registration.participant.username }}</strong>
+                                            {% if registration.participant.bio %}
+                                                <br><small class="text-muted">{{ registration.participant.bio|truncatewords:10 }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ registration.participant.email }}</td>
+                                <td>{{ registration.participant.phone|default:"-" }}</td>
+                                <td>{{ registration.registered_at|date:"M d, Y g:i A" }}</td>
+                                <td>
+                                    {% if registration.attended %}
+                                        <span class="badge bg-success">Attended</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Registered</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'conversation' registration.participant.id %}" class="btn btn-outline-primary" title="Send Message">
+                                            <i class="fas fa-envelope"></i>
+                                        </a>
+                                        {% if not registration.attended %}
+                                        <button class="btn btn-outline-success" onclick="markAttended({{ registration.id }})" title="Mark Attended">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Export Options -->
+                <div class="mt-4 p-3 border rounded bg-light shadow-sm">
+                    <h5 class="mb-3">Export Options</h5>
+                    <button onclick="exportToCSV()" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-download me-2"></i>Export to CSV
+                    </button>
+                    <button onclick="window.print()" class="btn btn-outline-secondary">
+                        <i class="fas fa-print me-2"></i>Print List
+                    </button>
+                </div>
+                {% else %}
+                <div class="text-center p-5 border rounded shadow-sm">
+                    <h5 class="text-muted">No registrations yet</h5>
+                    <p class="text-muted">Participants will appear here once they register for your event.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function exportToCSV() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Name,Email,Phone,Registration Date,Attendance Status\n";
+    
+    {% for registration in registrations %}
+    csvContent += "{{ registration.participant.get_full_name|default:registration.participant.username|escapejs }},";
+    csvContent += "{{ registration.participant.email|escapejs }},";
+    csvContent += "{{ registration.participant.phone|default:''|escapejs }},";
+    csvContent += "{{ registration.registered_at|date:'M d, Y g:i A'|escapejs }},";
+    csvContent += "{% if registration.attended %}Attended{% else %}Registered{% endif %}\n";
+    {% endfor %}
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "{{ event.title|slugify }}_registrations.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function markAttended(registrationId) {
+    // TODO: Implement AJAX call to a Django view to mark attendance
+    alert('This feature would mark the participant as attended. Implement the backend endpoint for this functionality.');
+}
+</script>
+{% endblock %}
+{% endblock %}

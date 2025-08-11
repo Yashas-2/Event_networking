@@ -1,0 +1,18 @@
+[
+    {
+        "model": "events.category",
+        "pk": 1,
+        "fields": {
+            "name": "Technical",
+            "description": "Technical workshops, coding bootcamps, and technology-related events"
+        }
+    },
+    {
+        "model": "events.category",
+        "pk": 2,
+        "fields": {
+            "name": "Non-Technical",
+            "description": "Soft skills, business, marketing, and other non-technical events"
+        }
+    }
+]

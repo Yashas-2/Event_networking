@@ -1,0 +1,97 @@
+/* Custom styles for the event networking app */
+
+.event-card {
+    transition: transform 0.2s;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+}
+
+.message-bubble {
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+.chat-container {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.profile-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+}
+
+.event-status-upcoming { color: #0d6efd; }
+.event-status-ongoing { color: #fd7e14; }
+.event-status-completed { color: #198754; }
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+}
+
+/* Messaging styles */
+.conversation-container {
+    background: #f8f9fa;
+}
+
+.message-sent {
+    background: #007bff;
+    color: white;
+    margin-left: auto;
+}
+
+.message-received {
+    background: white;
+    border: 1px solid #dee2e6;
+}
+
+/* Dashboard stats */
+.stats-card {
+    border-left: 4px solid;
+}
+
+.stats-card.primary { border-left-color: #007bff; }
+.stats-card.success { border-left-color: #28a745; }
+.stats-card.info { border-left-color: #17a2b8; }
+.stats-card.warning { border-left-color: #ffc107; }
+
+/* Star Rating Styles */
+.star-rating-container .fa-star {
+    color: #ccc; /* Default star color (grey) */
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.star-rating-container .fa-star:hover,
+.star-rating-container .fa-star.selected {
+    color: #FFD700; /* Gold color on hover and selection */
+}
+
+.text-gold {
+    color: #FFD700;
+}
+
+.star-icon {
+    color: #ccc; /* Light grey for unselected stars */
+}
+
+.star-icon-selected {
+    color: #FFD700; /* Gold for selected stars */
+}

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block auth_nav_items %}
+{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="/" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back
+    </a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Register as {{ user_type|title }}</h3>
+            </div>
+            <div class="card-body">
+
+                <!-- ✅ Filtered Error Messages Only -->
+                {% if request.method == 'POST' and messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" value="{{ form.username.value|default_if_none:'' }}" required autocomplete="off">
+                        {% if form.username.errors %}
+                            <div class="text-danger">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ form.email.value|default_if_none:'' }}" required>
+                        {% if form.email.errors %}
+                            <div class="text-danger">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Phone (Optional)</label>
+                        <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default_if_none:'' }}">
+                        {% if form.phone.errors %}
+                            <div class="text-danger">{{ form.phone.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bio (Optional)</label>
+                        <textarea name="bio" class="form-control">{{ form.bio.value|default_if_none:'' }}</textarea>
+                        {% if form.bio.errors %}
+                            <div class="text-danger">{{ form.bio.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password1" class="form-control" required autocomplete="off">
+                        {% if form.password1.errors %}
+                            <div class="text-danger">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" name="password2" class="form-control" required autocomplete="off">
+                        {% if form.password2.errors %}
+                            <div class="text-danger">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Hidden user_type field -->
+                    {{ form.user_type.as_hidden }}
+
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <a href="{% url 'login' %}">Already have an account? Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

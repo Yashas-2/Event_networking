@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block auth_nav_items %}
+{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="/" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back
+    </a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Login</h3>
+            </div>
+            <div class="card-body">
+
+                <!-- ✅ Filtered Error Messages Only -->
+                {% if request.method == 'POST' and messages %}
+    {% for message in messages %}
+        {% if message.tags == 'error' %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required autocomplete="off">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required autocomplete="off">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'user_type_selection' %}">Don't have an account? Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

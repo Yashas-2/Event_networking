@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'organizer_dashboard' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back
+    </a>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body text-center">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3 border border-primary p-1" width="150" height="150" alt="Profile Picture">
+                {% else %}
+                    <i class="fas fa-user-circle fa-9x text-muted mb-3"></i>
+                {% endif %}
+                <h3>{{ user.get_full_name|default:user.username }}</h3>
+                <p class="text-muted">{{ user.get_user_type_display }}</p>
+                {% if user.email %}
+                    <p class="text-muted"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+                {% endif %}
+                {% if user.phone %}
+                    <p class="text-muted"><i class="fas fa-phone me-2"></i>{{ user.phone }}</p>
+                {% endif %}
+                {% if user.bio %}
+                <p class="text-muted small">{{ user.bio }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Profile Update Form -->
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-light">
+                <h5>Update Profile</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'update_profile' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in profile_form %}
+                    <div class="mb-3">
+                        {{ field.label_tag }}
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        {% if user.user_type == 'organizer' %}
+        <!-- My Organized Events -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5>My Organized Events</h5>
+            </div>
+            <div class="card-body">
+                {% if organized_events %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped border">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in organized_events %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'event_detail' event.pk %}">
+                                        {{ event.title }}
+                                    </a>
+                                </td>
+                                <td>{{ event.date|date:"M d, Y" }}</td>
+                                <td>{{ event.get_status_display }}</td>
+                                <td class="d-flex gap-2">
+                                    <a href="{% url 'event_detail' event.pk %}" class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+                                    <a href="{% url 'event_update' event.pk %}" class="btn btn-sm btn-outline-secondary">
+                                        Edit
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center p-5 border rounded shadow-sm">
+                    <p class="text-muted mb-0">You haven't organized any events yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <!-- My Events (Participant) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5>My Events</h5>
+            </div>
+            <div class="card-body">
+                {% if registrations %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped border">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registration in registrations %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'event_detail' registration.event.pk %}">
+                                        {{ registration.event.title }}
+                                    </a>
+                                </td>
+                                <td>{{ registration.event.date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if registration.attended %}
+                                        <span class="badge bg-success">Attended</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Registered</span>
+                                    {% endif %}
+                                </td>
+                                <td class="d-flex gap-2">
+                                    <a href="{% url 'event_detail' registration.event.pk %}" class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+                                    <form method="post" action="{% url 'cancel_registration' registration.event.id %}" id="cancelForm{{ registration.id }}">
+                                        {% csrf_token %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmModal"
+                                                data-bs-message="Are you sure you want to cancel your registration for {{ registration.event.title }}?"
+                                                data-bs-form-id="cancelForm{{ registration.id }}">Cancel</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center p-5 border rounded shadow-sm">
+                    <p class="text-muted mb-0">You haven't registered for any events yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Certificates Section (Participant) -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">🎓 My Certificates</h5>
+            </div>
+            <div class="card-body">
+                <!-- Upload Certificate Form -->
+                <form method="post" action="{% url 'upload_certificate' %}" enctype="multipart/form-data" class="mb-4 p-3 border rounded bg-light shadow-sm">
+                    {% csrf_token %}
+                    <h6 class="mb-3">📤 Upload New Certificate</h6>
+                    {% if certificate_form.errors %}
+                        <div class="alert alert-danger">
+                            {{ certificate_form.errors }}
+                        </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        {{ certificate_form.name.label_tag }}
+                        {{ certificate_form.name|add_class:"form-control" }}
+                        {% for error in certificate_form.name.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ certificate_form.certificate_type.label_tag }}
+                        {{ certificate_form.certificate_type|add_class:"form-control" }}
+                        {% for error in certificate_form.certificate_type.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ certificate_form.certificate_file.label_tag }}
+                        {{ certificate_form.certificate_file|add_class:"form-control" }}
+                        {% for error in certificate_form.certificate_file.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-upload me-1"></i> Upload Certificate
+                    </button>
+                </form>
+
+                <!-- Display Uploaded Certificates -->
+                {% if certificates %}
+                <div class="row">
+                    {% for certificate in certificates %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title">{{ certificate.name }}</h6>
+                                <p class="card-text">
+                                    <small class="text-muted">Uploaded: {{ certificate.uploaded_at|date:"M d, Y" }}</small>
+                                </p>
+                                <div class="mt-auto d-flex justify-content-between">
+                                    <a href="{{ certificate.certificate_file.url }}" class="btn btn-sm btn-primary" target="_blank">
+                                        <i class="fas fa-eye me-1"></i> View
+                                    </a>
+                                    <a href="{% url 'delete_certificate' certificate.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash-alt me-1"></i> Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center p-5 border rounded shadow-sm">
+                    <p class="text-muted mb-0">No certificates uploaded yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{% url 'generate_cv' %}" class="btn btn-info shadow-sm">
+                <i class="fas fa-file-pdf me-2"></i>Generate CV
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

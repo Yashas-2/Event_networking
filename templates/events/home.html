@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+            <h1 class="display-4">Welcome to EventNet</h1>
+            <p class="lead">Discover amazing events and connect with like-minded people</p>
+            <hr class="my-4">
+            <p>Join our community and find events that match your interests.</p>
+            <a class="btn btn-light btn-lg" href="{% url 'event_list' %}" role="button">Explore Events</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <form method="get" action="{% url 'home' %}">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search events..." name="q" value="{{ request.GET.q }}">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <h2 class="mb-4">Upcoming Events</h2>
+        <div class="row">
+            {% for event in events %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        <p class="card-text flex-grow-1">{{ event.description|truncatewords:20 }}</p>
+                        <p class="text-muted small">
+                            <i class="fas fa-calendar me-2"></i>{{ event.date|date:"M d, Y" }}
+                            <br>
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}
+                            <br>
+                            <i class="fas fa-tag me-2"></i>{{ event.category.name }}
+                        </p>
+                        <a href="{% url 'event_detail' event.pk %}" class="btn btn-primary mt-auto">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-center">No upcoming events at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'event_list' %}" class="btn btn-outline-primary">View All Events</a>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <h3 class="mb-4">Categories</h3>
+        <div class="list-group shadow-sm">
+            {% for category in categories %}
+            <a href="{% url 'events_by_category' category.id %}" class="list-group-item list-group-item-action">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

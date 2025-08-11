@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block auth_nav_items %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="text-center mb-5">
+            <h1 class="display-4">Welcome to EventNet</h1>
+            <p class="lead">Choose your role to get started</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card h-100 text-center">
+                    <div class="card-body d-flex flex-column">
+                        <i class="fas fa-users fa-4x text-primary mb-3"></i>
+                        <h3 class="card-title">Participant</h3>
+                        <p class="card-text flex-grow-1">
+                            Join events, network with other participants, and enhance your skills.
+                        </p>
+                        <a href="{% url 'register' %}?type=participant" class="btn btn-primary btn-lg">
+                            Join as Participant
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100 text-center">
+                    <div class="card-body d-flex flex-column">
+                        <i class="fas fa-calendar-plus fa-4x text-success mb-3"></i>
+                        <h3 class="card-title">Organizer</h3>
+                        <p class="card-text flex-grow-1">
+                            Create and manage events, track registrations, and engage with participants.
+                        </p>
+                        <a href="{% url 'register' %}?type=organizer" class="btn btn-success btn-lg">
+                            Join as Organizer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <p>Already have an account?</p>
+            <a href="{% url 'login' %}?user_type=participant" class="btn btn-outline-primary me-2">Login as Participant</a>
+            <a href="{% url 'login' %}?user_type=organizer" class="btn btn-outline-success">Login as Organizer</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

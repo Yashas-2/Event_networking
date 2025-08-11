@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block auth_nav_items %}
+{% endblock %}
+
+{% block content %}
+<div class="text-start mb-3 no-print">
+    <a href="{% url 'profile' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Profile
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card" id="cv-content">
+            <div class="card-body">
+                <!-- CV Header -->
+                <div class="text-center mb-4">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3" width="120" height="120">
+                    {% endif %}
+                    <h1>{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="lead">{{ user.bio|default:"Passionate learner and event participant" }}</p>
+                    <hr>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h3>Contact Information</h3>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        {% if user.phone %}
+                        <p><strong>Phone:</strong> {{ user.phone }}</p>
+                        {% endif %}
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h3>Profile Summary</h3>
+                        <p>Active participant in professional and technical events with a focus on continuous learning and networking.</p>
+                    </div>
+                </div>
+
+                <!-- Events Attended -->
+                {% if attended_events %}
+                <div class="mb-4">
+                    <h3>Events Attended</h3>
+                    {% for registration in attended_events %}
+                    <div class="mb-3">
+                        <h5>{{ registration.event.title }}</h5>
+                        <p class="mb-1">
+                            <strong>Organizer:</strong> {{ registration.event.organizer.get_full_name|default:registration.event.organizer.username }}<br>
+                            <strong>Date:</strong> {{ registration.event.date|date:"F Y" }}<br>
+                            <strong>Category:</strong> {{ registration.event.category.name }}<br>
+                            <strong>Location:</strong> {{ registration.event.location }}
+                        </p>
+                        <p>{{ registration.event.description|truncatewords:30 }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Certificates -->
+                {% if certificates %}
+                <div class="mb-4">
+                    <h3>Certifications</h3>
+                    {% for certificate in certificates %}
+                    <div class="mb-2 certificate-item">
+                        <div class="cert-row">
+                            <span>{{ certificate.name }}</span>
+                        </div>
+                        <div class="cert-row">
+                            <strong>Type:</strong>
+                            <span>{{ certificate.get_certificate_type_display }}</span>
+                        </div>
+                        
+                        <div class="cert-row">
+                            <strong>Issued:</strong>
+                            <span>{{ certificate.uploaded_at|date:"F Y" }}</span>
+                        </div>
+
+                        {% if certificate.certificate_file %}
+                        <a href="{{ certificate.certificate_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                            <i class="fas fa-file-alt me-1"></i> View Certificate
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">Generated on {{ "now"|date:"F d, Y" }} via EventNet Platform</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3 no-print">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print me-2"></i>Print CV
+            </button>
+            
+        </div>
+    </div>
+</div>
+
+<style>
+/* Printing styles */
+@media print {
+    .no-print { display: none; }
+    .card { border: none; box-shadow: none; }
+    body { background: white; }
+}
+
+/* Compact spacing for certificates */
+.certificate-item {
+    margin-bottom: 10px;
+}
+.cert-row {
+    display: flex;
+    gap: 6px; /* space between label and value */
+    align-items: center;
+    margin-bottom: 2px;
+}
+.cert-row strong {
+    font-weight: 600;
+    white-space: nowrap; /* keep label in one line */
+}
+.cert-row span {
+    flex: 1;
+}
+</style>
+{% endblock %}

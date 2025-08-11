@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'includes/_back_button.html' %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Organizer Dashboard</h2>
+            <a href="{% url 'event_create' %}" class="btn btn-success shadow-sm">
+                <i class="fas fa-plus me-2"></i>Create New Event
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5>My Events</h5>
+            </div>
+            <div class="card-body">
+                {% if events %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped border">
+                        <thead>
+                            <tr>
+                                <th>Event Title</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Registrations</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a>
+                                </td>
+                                <td>{{ event.date|date:"M d, Y" }}</td>
+                                <td>{{ event.category.name }}</td>
+                                <td>
+                                    <a href="{% url 'event_registrations' event.id %}">
+                                        {{ event.registered_count }}/{{ event.max_participants }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if event.status == 'upcoming' %}primary{% elif event.status == 'ongoing' %}warning text-dark{% else %}success{% endif %}">
+                                        {{ event.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'event_detail' event.pk %}" class="btn btn-outline-primary">View</a>
+                                        <a href="{% url 'event_registrations' event.id %}" class="btn btn-outline-info">Regs</a>
+                                        <a href="{% url 'event_update' event.pk %}" class="btn btn-outline-secondary">Edit</a>
+                                        <a href="{% url 'event_delete' event.pk %}" class="btn btn-outline-danger">Del</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center p-5 border rounded shadow-sm">
+                    <h5 class="text-muted">No events created yet</h5>
+                    <p class="text-muted">Create your first event to get started!</p>
+                    <a href="{% url 'event_create' %}" class="btn btn-success mt-3">
+                        <i class="fas fa-plus me-2"></i>Create Event
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Statistics -->
+<div class="row mt-4">
+    <div class="col-md-3 mb-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h3 class="text-primary mb-2">{{ events|length }}</h3>
+                <p class="card-text text-muted">Total Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h3 class="text-success mb-2">
+                    {{ upcoming_events_count }}
+                </h3>
+                <p class="card-text text-muted">Upcoming Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h3 class="text-info mb-2">
+                    {{ total_registrations }}
+                </h3>
+                <p class="card-text text-muted">Total Registrations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h3 class="text-warning mb-2">
+                    {{ completed_events_count }}
+                </h3>
+                <p class="card-text text-muted">Completed Events</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

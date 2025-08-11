@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'includes/_back_button.html' %}
+<div class="container mt-5">
+    <h2>Register for {{ event.title }}</h2>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="text-danger">{{ form.name.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="text-danger">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-success">Register</button>
+    </form>
+</div>
+{% endblock %}
+
+</body>
+</html>
