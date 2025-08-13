@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from django.utils import timezone
 from datetime import timedelta
+import datetime
 from django.contrib.auth import get_user_model
 
 class User(AbstractUser):
@@ -41,7 +42,8 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     start_time = models.DateTimeField()
-    duration = models.IntegerField(help_text="Duration in minutes", default=60)
+    duration = models.IntegerField(default=60)
+    image = models.ImageField(upload_to='event_posters/', blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -52,10 +54,13 @@ class Event(models.Model):
     @property
     def status(self):
         now = timezone.now()
-        end_time = self.start_time + timedelta(minutes=self.duration)
-        if now < self.start_time:
+        # Ensure start_time is timezone-aware and in UTC for consistent comparison
+        start_time_utc = self.start_time.astimezone(datetime.timezone.utc) if self.start_time.tzinfo else timezone.make_aware(self.start_time, datetime.timezone.utc)
+        end_time_utc = start_time_utc + timedelta(minutes=self.duration)
+
+        if now < start_time_utc:
             return 'upcoming'
-        elif self.start_time <= now <= end_time:
+        elif start_time_utc <= now <= end_time_utc:
             return 'ongoing'
         else:
             return 'completed'

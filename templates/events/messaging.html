@@ -57,7 +57,7 @@
                                     <small>{{ message.timestamp|date:"M d, Y g:i A" }}</small>
                                 </div>
                                 <p class="mb-1">{{ message.content|truncatewords:20 }}</p>
-                                <a href="{% url 'conversation' message.sender.id %}" class="btn btn-sm btn-outline-primary">
+                                <a href="{% url 'conversation' message.sender.id %}" class="btn btn-sm btn-custom">
                                     View Conversation
                                 </a>
                             </div>
@@ -78,7 +78,7 @@
                                     <small>{{ message.timestamp|date:"M d, Y g:i A" }}</small>
                                 </div>
                                 <p class="mb-1">{{ message.content|truncatewords:20 }}</p>
-                                <a href="{% url 'conversation' message.receiver.id %}" class="btn btn-sm btn-outline-primary">
+                                <a href="{% url 'conversation' message.receiver.id %}" class="btn btn-sm btn-custom">
                                     View Conversation
                                 </a>
                             </div>

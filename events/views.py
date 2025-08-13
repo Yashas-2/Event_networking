@@ -448,11 +448,12 @@ def event_create(request):
         return redirect('home')
 
     if request.method == 'POST':
-        form = EventForm(request.POST)
+        form = EventForm(request.POST, request.FILES)
         if form.is_valid():
             event = form.save(commit=False)
             event.organizer = request.user
             event.save()
+            # Ensure media directory has write permissions for the web server user.
             messages.success(request, 'Event created successfully!')
             return redirect('organizer_dashboard')
     else:
@@ -468,9 +469,12 @@ def event_update(request, pk):
         return redirect('home')
 
     if request.method == 'POST':
-        form = EventForm(request.POST, instance=event)
+        form = EventForm(request.POST, request.FILES, instance=event)
+        print(f"Request FILES: {request.FILES}")
         if form.is_valid():
-            form.save()
+            event = form.save(commit=False)
+            event.save()
+            # Ensure media directory has write permissions for the web server user.
             messages.success(request, 'Event updated successfully!')
             return redirect('organizer_dashboard')
     else:

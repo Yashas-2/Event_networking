@@ -92,10 +92,15 @@ class CertificateUploadForm(forms.ModelForm):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        exclude = ['organizer', 'created_at', 'updated_at', 'duration']
+        fields = ['title', 'description', 'category', 'date', 'location',
+                  'max_participants', 'registration_link', 'start_time', 'duration', 'image']
         widgets = {
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'image': forms.FileInput(),
         }
+        # Note: For image updates, the user must re-select the image file,
+        # even if a file was previously uploaded.
 
 
 class RegistrationForm(forms.ModelForm):

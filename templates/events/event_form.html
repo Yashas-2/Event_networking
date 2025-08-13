@@ -15,33 +15,57 @@
                     {% endif %}
                 </div>
                 <div class="card-body">
-                    <form method="post" id="event-form">
+                    <form method="post" id="event-form" enctype="multipart/form-data">
                         {% csrf_token %}
+                        
                         {% if form.errors %}
                             <div class="alert alert-danger">
                                 <strong>Please correct the errors below.</strong>
                             </div>
                         {% endif %}
+                        
                         {% for field in form %}
-                            <div class="mb-3">
-                                {{ field.label_tag }}
-                                {% if field.errors %}
-                                    {{ field|add_class:"form-control is-invalid" }}
-                                {% else %}
-                                    {{ field|add_class:"form-control" }}
-                                {% endif %}
-                                {% if field.help_text %}
-                                    <div class="form-text">{{ field.help_text }}</div>
-                                {% endif %}
-                                {% for error in field.errors %}
-                                    <div class="invalid-feedback d-block">{{ error }}</div>
-                                {% endfor %}
-                            </div>
+                            {% if field.name == "image" %}
+                                <div class="mb-3">
+                                    {{ field.label_tag }}
+                                    <div class="custom-file">
+                                        {{ field|add_class:"custom-file-input" }}
+                                        <label class="custom-file-label" for="{{ field.id_for_label }}">Choose the poster: upload folder</label>
+                                    </div>
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                    {% if field.value %}
+                                        <div class="d-flex align-items-center mt-2">
+                                            <span class="me-2">{{ field.value.name|cut:"event_posters/" }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% elif field.name != "duration" %}
+                                <div class="mb-3">
+                                    {{ field.label_tag }}
+                                    {% if field.errors %}
+                                        {{ field|add_class:"form-control is-invalid" }}
+                                    {% else %}
+                                        {{ field|add_class:"form-control" }}
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         {% endfor %}
 
+                        <!-- Custom Duration Input -->
                         <div class="mb-3">
                             <label class="form-label">Duration</label>
-                            <div class="row">
+                            <div class="row g-2">
                                 <div class="col">
                                     <input type="number" id="hours" class="form-control" placeholder="Hours" min="0">
                                 </div>
@@ -53,10 +77,10 @@
 
                         <input type="hidden" name="duration" id="duration">
 
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-custom w-100 mt-3">
                             {% if action == 'create' %}Create Event{% else %}Update Event{% endif %}
                         </button>
-                        <a href="{% url 'organizer_dashboard' %}" class="btn btn-secondary ms-2">Cancel</a>
+                        <a href="{% url 'organizer_dashboard' %}" class="btn btn-custom w-100 mt-2">Cancel</a>
                     </form>
                 </div>
             </div>
@@ -66,13 +90,24 @@
 
 {% block extra_js %}
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const eventDuration = {{ event.duration|default:0 }};
+        if (eventDuration > 0) {
+            const hours = Math.floor(eventDuration / 60);
+            const minutes = eventDuration % 60;
+            document.getElementById('hours').value = hours;
+            document.getElementById('minutes').value = minutes;
+        }
+    });
+
     document.getElementById('event-form').addEventListener('submit', function(e) {
-        const hours = document.getElementById('hours').value;
-        const minutes = document.getElementById('minutes').value;
-        const totalMinutes = (parseInt(hours) || 0) * 60 + (parseInt(minutes) || 0);
+        const hours = parseInt(document.getElementById('hours').value) || 0;
+        const minutes = parseInt(document.getElementById('minutes').value) || 0;
+
+        // Convert total duration to minutes
+        const totalMinutes = hours * 60 + minutes;
         document.getElementById('duration').value = totalMinutes;
     });
 </script>
 {% endblock %}
-
 {% endblock %}

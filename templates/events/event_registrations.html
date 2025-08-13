@@ -8,7 +8,7 @@
                 <h2>{{ event.title }} - Registrations</h2>
                 <p class="text-muted">Total Registrations: {{ registrations|length }}/{{ event.max_participants }}</p>
             </div>
-            <a href="{% url 'organizer_dashboard' %}" class="btn btn-secondary shadow-sm">
+            <a href="{% url 'organizer_dashboard' %}" class="btn btn-custom shadow-sm">
                 <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
             </a>
         </div>
@@ -65,11 +65,11 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{% url 'conversation' registration.participant.id %}" class="btn btn-outline-primary" title="Send Message">
+                                        <a href="{% url 'conversation' registration.participant.id %}" class="btn btn-custom" title="Send Message">
                                             <i class="fas fa-envelope"></i>
                                         </a>
                                         {% if not registration.attended %}
-                                        <button class="btn btn-outline-success" onclick="markAttended({{ registration.id }})" title="Mark Attended">
+                                        <button class="btn btn-custom" onclick="markAttended({{ registration.id }})" title="Mark Attended">
                                             <i class="fas fa-check"></i>
                                         </button>
                                         {% endif %}
@@ -84,10 +84,10 @@
                 <!-- Export Options -->
                 <div class="mt-4 p-3 border rounded bg-light shadow-sm">
                     <h5 class="mb-3">Export Options</h5>
-                    <button onclick="exportToCSV()" class="btn btn-outline-primary me-2">
+                    <button onclick="exportToCSV()" class="btn btn-custom me-2">
                         <i class="fas fa-download me-2"></i>Export to CSV
                     </button>
-                    <button onclick="window.print()" class="btn btn-outline-secondary">
+                    <button onclick="window.print()" class="btn btn-custom">
                         <i class="fas fa-print me-2"></i>Print List
                     </button>
                 </div>
