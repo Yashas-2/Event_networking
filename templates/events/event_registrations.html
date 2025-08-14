@@ -46,7 +46,11 @@
                                             <i class="fas fa-user-circle fa-2x text-muted me-2"></i>
                                         {% endif %}
                                         <div>
-                                            <strong>{{ registration.participant.get_full_name|default:registration.participant.username }}</strong>
+                                            <strong>
+                                                <a href="{% url 'view_profile' registration.participant.id %}">
+                                                    {{ registration.participant.get_full_name|default:registration.participant.username }}
+                                                </a>
+                                            </strong>
                                             {% if registration.participant.bio %}
                                                 <br><small class="text-muted">{{ registration.participant.bio|truncatewords:10 }}</small>
                                             {% endif %}

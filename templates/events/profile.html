@@ -3,33 +3,40 @@
 
 {% block content %}
 <div class="mb-3">
-    <a href="{% url 'organizer_dashboard' %}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Back
+    <a href="{% url 'home' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Home
     </a>
 </div>
 <div class="row">
     <div class="col-md-4">
         <div class="card shadow-sm mb-4">
             <div class="card-body text-center">
-                {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3 border border-primary p-1" width="150" height="150" alt="Profile Picture">
+                {% if profile_user.profile_picture %}
+                    <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle mb-3 border border-primary p-1" width="150" height="150" alt="Profile Picture">
                 {% else %}
                     <i class="fas fa-user-circle fa-9x text-muted mb-3"></i>
                 {% endif %}
-                <h3>{{ user.get_full_name|default:user.username }}</h3>
-                <p class="text-muted">{{ user.get_user_type_display }}</p>
-                {% if user.email %}
-                    <p class="text-muted"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+                <h3>{{ profile_user.get_full_name|default:profile_user.username }}</h3>
+                <p class="text-muted">{{ profile_user.get_user_type_display }}</p>
+                {% if profile_user.email %}
+                    <p class="text-muted"><i class="fas fa-envelope me-2"></i>{{ profile_user.email }}</p>
                 {% endif %}
-                {% if user.phone %}
-                    <p class="text-muted"><i class="fas fa-phone me-2"></i>{{ user.phone }}</p>
+                {% if profile_user.phone %}
+                    <p class="text-muted"><i class="fas fa-phone me-2"></i>{{ profile_user.phone }}</p>
                 {% endif %}
-                {% if user.bio %}
-                <p class="text-muted small">{{ user.bio }}</p>
+                {% if profile_user.bio %}
+                <p class="text-muted small">{{ profile_user.bio }}</p>
+                {% endif %}
+
+                {% if user.is_authenticated and user != profile_user %}
+                    <a href="{% url 'conversation' profile_user.id %}" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Message
+                    </a>
                 {% endif %}
             </div>
         </div>
         
+        {% if user == profile_user %}
         <!-- Profile Update Form -->
         <div class="card shadow-sm mt-3">
             <div class="card-header bg-light">
@@ -54,14 +61,15 @@
                 </form>
             </div>
         </div>
+        {% endif %}
     </div>
     
     <div class="col-md-8">
-        {% if user.user_type == 'organizer' %}
+        {% if profile_user.user_type == 'organizer' %}
         <!-- My Organized Events -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
-                <h5>My Organized Events</h5>
+                <h5>Organized Events</h5>
             </div>
             <div class="card-body">
                 {% if organized_events %}
@@ -89,9 +97,11 @@
                                     <a href="{% url 'event_detail' event.pk %}" class="btn btn-sm btn-outline-primary">
                                         View
                                     </a>
+                                    {% if user == profile_user %}
                                     <a href="{% url 'event_update' event.pk %}" class="btn btn-sm btn-outline-secondary">
                                         Edit
                                     </a>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -100,7 +110,7 @@
                 </div>
                 {% else %}
                 <div class="text-center p-5 border rounded shadow-sm">
-                    <p class="text-muted mb-0">You haven't organized any events yet.</p>
+                    <p class="text-muted mb-0">This organizer has no events.</p>
                 </div>
                 {% endif %}
             </div>
@@ -109,7 +119,7 @@
         <!-- My Events (Participant) -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
-                <h5>My Events</h5>
+                <h5>Registered Events</h5>
             </div>
             <div class="card-body">
                 {% if registrations %}
@@ -120,7 +130,9 @@
                                 <th>Event</th>
                                 <th>Date</th>
                                 <th>Status</th>
+                                {% if user == profile_user %}
                                 <th>Actions</th>
+                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -139,6 +151,7 @@
                                         <span class="badge bg-warning text-dark">Registered</span>
                                     {% endif %}
                                 </td>
+                                {% if user == profile_user %}
                                 <td class="d-flex gap-2">
                                     <a href="{% url 'event_detail' registration.event.pk %}" class="btn btn-sm btn-outline-primary">
                                         View
@@ -150,6 +163,7 @@
                                                 data-bs-form-id="cancelForm{{ registration.id }}">Cancel</button>
                                     </form>
                                 </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -157,7 +171,7 @@
                 </div>
                 {% else %}
                 <div class="text-center p-5 border rounded shadow-sm">
-                    <p class="text-muted mb-0">You haven't registered for any events yet.</p>
+                    <p class="text-muted mb-0">This user has not registered for any events.</p>
                 </div>
                 {% endif %}
             </div>
@@ -166,9 +180,10 @@
         <!-- Certificates Section (Participant) -->
         <div class="card shadow-sm mt-4">
             <div class="card-header bg-light">
-                <h5 class="mb-0">🎓 My Certificates</h5>
+                <h5 class="mb-0">🎓 Certificates</h5>
             </div>
             <div class="card-body">
+                {% if user == profile_user %}
                 <!-- Upload Certificate Form -->
                 <form method="post" action="{% url 'upload_certificate' %}" enctype="multipart/form-data" class="mb-4 p-3 border rounded bg-light shadow-sm">
                     {% csrf_token %}
@@ -203,6 +218,7 @@
                         <i class="fas fa-upload me-1"></i> Upload Certificate
                     </button>
                 </form>
+                {% endif %}
 
                 <!-- Display Uploaded Certificates -->
                 {% if certificates %}
@@ -219,9 +235,11 @@
                                     <a href="{{ certificate.certificate_file.url }}" class="btn btn-sm btn-primary" target="_blank">
                                         <i class="fas fa-eye me-1"></i> View
                                     </a>
+                                    {% if user == profile_user %}
                                     <a href="{% url 'delete_certificate' certificate.id %}" class="btn btn-sm btn-danger">
                                         <i class="fas fa-trash-alt me-1"></i> Delete
                                     </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -236,11 +254,13 @@
             </div>
         </div>
         
+        {% if user == profile_user %}
         <div class="mt-4">
             <a href="{% url 'generate_cv' %}" class="btn btn-custom shadow-sm">
                 <i class="fas fa-file-pdf me-2"></i>Generate CV
             </a>
         </div>
+        {% endif %}
         {% endif %}
     </div>
 </div>

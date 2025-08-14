@@ -24,6 +24,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'messaging_inbox' %}">
                                     <i class="fas fa-envelope me-1"></i>Messages
+                                    {% if unread_message_count > 0 %}
+                                        <span class="badge bg-danger rounded-pill">{{ unread_message_count }}</span>
+                                    {% endif %}
                                 </a>
                             </li>
                             <a class="nav-link" href="{% url 'profile' %}">Profile</a>

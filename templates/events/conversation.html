@@ -1,46 +1,45 @@
-{% extends 'base.html' %}
-
-{% block content %}
-{% include 'includes/_back_button.html' %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5>
-                    Conversation with {{ other_user.get_full_name|default:other_user.username }}
-                </h5>
-            </div>
-            <div class="card-body" style="height: 400px; overflow-y: auto;">
-                {% for message in conversation %}
-                <div class="mb-3 {% if message.sender == user %}text-end{% endif %}">
-                    <div class="d-inline-block p-2 rounded {% if message.sender == user %}bg-primary text-white{% else %}bg-light{% endif %}" style="max-width: 70%;">
-                        <p class="mb-1">{{ message.content }}</p>
-                        <small class="{% if message.sender == user %}text-light{% else %}text-muted{% endif %}">
-                            {{ message.timestamp|date:"M d, g:i A" }}
-                        </small>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-muted text-center">No messages yet. Start the conversation!</p>
-                {% endfor %}
-            </div>
-            <div class="card-footer">
-                <form method="post" action="{% url 'send_message' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="receiver" value="{{ other_user.id }}">
-                    <div class="input-group">
-                        <textarea name="content" class="form-control" rows="2" placeholder="Type your message..."></textarea>
-                        <button type="submit" class="btn btn-primary">Send</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <div class="text-center mt-3">
-            <a href="{% url 'messaging_inbox' %}" class="btn btn-custom">
-                <i class="fas fa-arrow-left me-2"></i>Back to Messages
-            </a>
-        </div>
-    </div>
+{% load static %}
+<div class="chat-header">
+    {% if other_user.profile_picture %}
+        <img src="{{ other_user.profile_picture.url }}" alt="{{ other_user.username }}" class="conversation-avatar">
+    {% else %}
+        <img src="{% static 'images/default_avatar.svg' %}" alt="{{ other_user.username }}" class="conversation-avatar">
+    {% endif %}
+    <div class="conversation-name">{{ other_user.get_full_name|default:other_user.username }}</div>
 </div>
-{% endblock %}
+<div class="chat-messages" id="chat-messages">
+    {% for message in conversation %}
+        <div class="message {% if message.sender == user %}sender{% else %}receiver{% endif %}">
+            {% if message.sender != user %}
+                {% if other_user.profile_picture %}
+                    <img src="{{ other_user.profile_picture.url }}" alt="{{ other_user.username }}" class="message-avatar">
+                {% else %}
+                    <img src="{% static 'images/default_avatar.svg' %}" alt="{{ other_user.username }}" class="message-avatar">
+                {% endif %}
+            {% endif %}
+            <div class="message-content">
+                <div>{{ message.content }}</div>
+                <div class="message-timestamp">{{ message.timestamp|date:"M d, g:i A" }}</div>
+            </div>
+            {% if message.sender == user %}
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="message-avatar">
+                {% else %}
+                    <img src="{% static 'images/default_avatar.svg' %}" alt="{{ user.username }}" class="message-avatar">
+                {% endif %}
+            {% endif %}
+        </div>
+    {% empty %}
+        <p class="text-center text-muted">No messages yet. Start the conversation!</p>
+    {% endfor %}
+</div>
+<div class="chat-input">
+    <form method="post" action="{% url 'send_message' %}" id="send-message-form">
+        {% csrf_token %}
+        <input type="hidden" name="receiver" value="{{ other_user.id }}">
+        <div class="input-group">
+            <textarea name="content" class="form-control" rows="1" placeholder="Type your message..."></textarea>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>
+</div>

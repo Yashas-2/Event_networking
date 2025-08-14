@@ -53,10 +53,10 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{% url 'event_detail' event.pk %}" class="btn btn-custom">View</a>
-                                        <a href="{% url 'event_registrations' event.id %}" class="btn btn-custom">Regs</a>
-                                        <a href="{% url 'event_update' event.pk %}" class="btn btn-custom">Edit</a>
-                                        <a href="{% url 'event_delete' event.pk %}" class="btn btn-custom">Del</a>
+                                        <a href="{% url 'event_detail' event.pk %}" class="btn btn-view">View</a>
+                                        <a href="{% url 'event_registrations' event.id %}" class="btn btn-regs">Regs</a>
+                                        <a href="{% url 'event_update' event.pk %}" class="btn btn-edit">Edit</a>
+                                        <a href="{% url 'event_delete' event.pk %}" class="btn btn-delete">Del</a>
                                     </div>
                                 </td>
                             </tr>

@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views.generic import ListView, DetailView
-from django.db.models import Q, Max
+from django.db.models import Q, Max, Subquery, OuterRef
 from django.http import JsonResponse
 from django.contrib.auth.views import LoginView
 import json
@@ -327,6 +327,70 @@ def generate_cv(request):
     return render(request, 'events/cv_template.html', context)
 
 
+
+
+@login_required
+def chat_view(request, user_id=None):
+    """
+    Main chat view that handles both the conversation list and the active chat.
+    """
+    user = request.user
+    
+    # Get all users the current user has had a conversation with
+    q_filter = Q(sender=user) | Q(receiver=user)
+    messaged_user_ids = Message.objects.filter(q_filter).values_list('sender_id', 'receiver_id')
+    messaged_user_ids = {uid for t in messaged_user_ids for uid in t if uid != user.id}
+    
+    # For participants, also get organizers of events they are registered for
+    if user.user_type == 'participant':
+        registered_events = Registration.objects.filter(user=user).select_related('event__organizer')
+        organizer_ids = {reg.event.organizer.id for reg in registered_events}
+        messaged_user_ids.update(organizer_ids)
+
+    conversations = User.objects.filter(id__in=messaged_user_ids)
+
+    # Annotate with the last message for sorting and display
+    # Find the latest message (either sent or received) for each conversation
+    latest_message_subquery = Message.objects.filter(
+        Q(sender=OuterRef('pk'), receiver=user) |
+        Q(sender=user, receiver=OuterRef('pk'))
+    ).order_by('-timestamp')
+
+    conversations = conversations.annotate(
+        last_message_id=Subquery(latest_message_subquery.values('id')[:1]),
+        last_message_time=Subquery(latest_message_subquery.values('timestamp')[:1])
+    ).order_by('-last_message_time')
+
+    # Fetch the actual last message objects
+    # This requires another query or iterating and fetching,
+    # but for simplicity, we'll attach it in a loop for now.
+    # A more optimized way would be to use a Prefetch object if the relationship was direct.
+    for conv_user in conversations:
+        if conv_user.last_message_id:
+            conv_user.last_message = Message.objects.get(id=conv_user.last_message_id)
+        else:
+            conv_user.last_message = None
+
+    active_conversation = None
+    other_user = None
+
+    if user_id:
+        other_user = get_object_or_404(User, id=user_id)
+        active_conversation = Message.objects.filter(
+            (Q(sender=user) & Q(receiver=other_user)) |
+            (Q(sender=other_user) & Q(receiver=user))
+        ).order_by('timestamp')
+        
+        # Mark messages as read
+        Message.objects.filter(sender=other_user, receiver=user, is_read=False).update(is_read=True)
+
+    context = {
+        'conversations': conversations,
+        'other_user': other_user,
+        'conversation': active_conversation,
+        'message_form': MessageForm(sender=user),
+    }
+    return render(request, 'events/messaging.html', context)
 
 
 @login_required

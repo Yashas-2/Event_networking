@@ -19,6 +19,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('home/', views.home, name='home'),
     path('profile/', views.profile_view, name='profile'),
+    path('profile/<int:user_id>/', views.profile_view, name='view_profile'),
     path('update-profile/', views.update_profile, name='update_profile'),
     path('generate-cv/', views.generate_cv, name='generate_cv'),
     
@@ -42,13 +43,12 @@ urlpatterns = [
     
     # Certificates
     path('upload-certificate/', views.upload_certificate, name='upload_certificate'),
-    path('profile/', profile_view, name='profile'),
     path('delete-certificate/<int:cert_id>/', delete_certificate, name='delete_certificate'),
     
     # Messaging
-    path('messages/', views.messaging_inbox, name='messaging_inbox'),
+    path('messages/', views.chat_view, name='messaging_inbox'),
+    path('messages/<int:user_id>/', views.chat_view, name='conversation'),
     path('send-message/', views.send_message, name='send_message'),
-    path('conversation/<int:user_id>/', views.conversation_view, name='conversation'),
     
     # Organizer features
     path('organizer-dashboard/', views.organizer_dashboard, name='organizer_dashboard'),

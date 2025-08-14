@@ -15,7 +15,11 @@
         <h1 class="card-title">{{ event.title }}</h1>
         <p class="text-muted">
           Organized by:
-          <strong>{{ event.organizer.get_full_name|default:event.organizer.username }}</strong>
+          <strong>
+            <a href="{% url 'view_profile' event.organizer.id %}">
+              {{ event.organizer.get_full_name|default:event.organizer.username }}
+            </a>
+          </strong>
         </p>
 
         <div class="row mb-3">
@@ -112,7 +116,7 @@
         {% for fb in feedback %}
         <div class="mb-3 p-3 border rounded bg-white">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <strong>{{ fb.participant.get_full_name|default:fb.participant.username }}</strong>
+            <strong><a href="{% url 'view_profile' fb.participant.id %}">{{ fb.participant.get_full_name|default:fb.participant.username }}</a></strong>
             <div>
               {% for i in "12345" %}
                 {% if forloop.counter <= fb.rating %}
@@ -154,7 +158,7 @@
 
         {% for suggestion in suggestions %}
         <div class="mb-3 p-3 border rounded bg-white">
-          <strong>{{ suggestion.participant.get_full_name|default:suggestion.participant.username }}</strong>
+          <strong><a href="{% url 'view_profile' suggestion.participant.id %}">{{ suggestion.participant.get_full_name|default:suggestion.participant.username }}</a></strong>
           <p class="mb-1">{{ suggestion.suggestion }}</p>
           <small class="text-muted">{{ suggestion.created_at|date:"M d, Y" }}</small>
         </div>
@@ -192,7 +196,7 @@
         <h5>Contact Organizer</h5>
       </div>
       <div class="card-body">
-        <p><strong>{{ event.organizer.get_full_name|default:event.organizer.username }}</strong></p>
+        <p><strong><a href="{% url 'view_profile' event.organizer.id %}">{{ event.organizer.get_full_name|default:event.organizer.username }}</a></strong></p>
         {% if event.organizer.email %}
         <p>Email: {{ event.organizer.email }}</p>
         {% endif %}

@@ -1,96 +1,46 @@
 {% extends 'base.html' %}
-{% load widget_tweaks %}
+{% load static %}
 
 {% block content %}
-{% include 'includes/_back_button.html' %}
-<div class="row">
-    <div class="col-md-4">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light">
-                <h5>Send New Message</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" action="{% url 'send_message' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        {{ message_form.receiver.label_tag }}
-                        {{ message_form.receiver|add_class:"form-select" }}
-                    </div>
-                    <div class="mb-3">
-                        {{ message_form.content.label_tag }}
-                        {{ message_form.content|add_class:"form-control" }}
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send Message</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <ul class="nav nav-tabs card-header-tabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab" aria-controls="received" aria-selected="true">
-                            Received Messages
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab" aria-controls="sent" aria-selected="false">
-                            Sent Messages
-                        </button>
-                    </li>
-                </ul>
-            </div>
-            <div class="card-body">
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="received" role="tabpanel">
-                        {% if received_messages %}
-                        <div class="list-group">
-                            {% for message in received_messages %}
-                            <div class="list-group-item list-group-item-action {% if not message.is_read %}list-group-item-info{% endif %} mb-2 rounded shadow-sm">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <strong>From: {{ message.sender.get_full_name|default:message.sender.username }}</strong>
-                                        {% if not message.is_read %}<span class="badge bg-primary ms-2">New</span>{% endif %}
-                                    </div>
-                                    <small>{{ message.timestamp|date:"M d, Y g:i A" }}</small>
-                                </div>
-                                <p class="mb-1">{{ message.content|truncatewords:20 }}</p>
-                                <a href="{% url 'conversation' message.sender.id %}" class="btn btn-sm btn-custom">
-                                    View Conversation
-                                </a>
-                            </div>
-                            {% endfor %}
+<div class="mb-3">
+    <a href="{% url 'home' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Home
+    </a>
+</div>
+<div class="chat-container">
+    <div class="conversation-list">
+        {% for conv_user in conversations %}
+            <a href="{% url 'conversation' conv_user.id %}" class="text-decoration-none text-dark">
+                <div class="conversation-item {% if other_user.id == conv_user.id %}active{% endif %}">
+                    {% if conv_user.profile_picture %}
+                        <img src="{{ conv_user.profile_picture.url }}" alt="{{ conv_user.username }}" class="conversation-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default_avatar.svg' %}" alt="{{ conv_user.username }}" class="conversation-avatar">
+                    {% endif %}
+                    <div class="conversation-details">
+                        <div class="conversation-name">{{ conv_user.get_full_name|default:conv_user.username }}</div>
+                        <div class="conversation-last-message">
+                            {{ conv_user.last_message.content|truncatewords:5|default:"No messages yet" }}
                         </div>
-                        {% else %}
-                        <p class="text-muted">No messages received yet.</p>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="tab-pane fade" id="sent" role="tabpanel">
-                        {% if sent_messages %}
-                        <div class="list-group">
-                            {% for message in sent_messages %}
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between">
-                                    <strong>To: {{ message.receiver.get_full_name|default:message.receiver.username }}</strong>
-                                    <small>{{ message.timestamp|date:"M d, Y g:i A" }}</small>
-                                </div>
-                                <p class="mb-1">{{ message.content|truncatewords:20 }}</p>
-                                <a href="{% url 'conversation' message.receiver.id %}" class="btn btn-sm btn-custom">
-                                    View Conversation
-                                </a>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <p class="text-muted">No messages sent yet.</p>
-                        {% endif %}
                     </div>
                 </div>
+            </a>
+        {% empty %}
+            <p class="text-center text-muted p-3">No conversations yet.</p>
+        {% endfor %}
+    </div>
+    <div class="chat-window">
+        {% if other_user %}
+            {% include 'events/conversation.html' %}
+        {% else %}
+            <div class="d-flex h-100 justify-content-center align-items-center">
+                <div class="text-center text-muted">
+                    <i class="fas fa-comments fa-4x mb-3"></i>
+                    <h4>Select a conversation</h4>
+                    <p>Choose a user from the left to start chatting.</p>
+                </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
