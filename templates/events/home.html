@@ -31,12 +31,13 @@
                     No image available for this event.
                 </div>
                 {% endif %}
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h5 class="card-title">{{ first_event.title }}</h5>
                     <p class="card-text small text-muted">
                         <i class="fas fa-calendar me-2"></i>{{ first_event.date|date:"M d, Y" }}<br>
                         <i class="fas fa-map-marker-alt me-2"></i>{{ first_event.location }}
                     </p>
+                    <a href="{% url 'event_detail' first_event.pk %}" class="btn btn-sm btn-custom w-100">View Details</a>
                 </div>
             </a>
                         
