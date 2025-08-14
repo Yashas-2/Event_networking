@@ -2,7 +2,6 @@
 
 {% block content %}
 
-
 <div class="row">
     <!-- Sidebar for Categories -->
     <div class="col-md-3 mb-4">
@@ -18,39 +17,44 @@
 
     <!-- Main Content -->
     <div class="col-md-9">
-        <!-- Big Banner for First Event -->
-        {% if events %}
-            {% with first_event=events.0 %}
-            <a href="{% url 'event_detail' first_event.pk %}" class="big-banner d-block mb-4 card event-card shadow-sm">
-                {% if first_event.image %}
-                <img src="{{ first_event.image.url }}" alt="{{ first_event.title }}"
-                     class="card-img-top"
-                     style="width: 100%; height: 350px; object-fit: cover;">
-                {% else %}
-                <div class="alert alert-info text-center" role="alert" style="height: 350px; display: flex; align-items: center; justify-content: center;">
-                    No image available for this event.
-                </div>
-                {% endif %}
-                <div class="card-body text-center wide-poster-card-body">
-                    <h5 class="card-title">{{ first_event.title }}</h5>
-                    <p class="card-text">
-                        {{ first_event.date|date:"M d, Y" }}<br>
-                        {{ first_event.location }}
-                    </p>
-                    <a href="{% url 'event_detail' first_event.pk %}" class="btn btn-sm btn-custom w-100 wide-poster-btn">View Details</a>
-                </div>
-            </a>
-                        
-            {% endwith %}
-        {% endif %}
-
-        <!-- Search Bar -->
-        <div class="mb-4 search-bar">
-            <form method="get" action="{% url 'home' %}" class="d-flex">
-                <input type="text" class="form-control" placeholder="Search events..." name="q" value="{{ request.GET.q }}">
-                <button type="submit" class="btn btn-custom"><i class="fas fa-search"></i></button>
-            </form>
+<!-- Big Banner for First Event -->
+{% if events %}
+    {% with first_event=events.0 %}
+    <a href="{% url 'event_detail' first_event.pk %}" class="big-banner d-block mb-4 card event-card shadow-sm">
+        {% if first_event.image %}
+        <img src="{{ first_event.image.url }}" alt="{{ first_event.title }}"
+             class="card-img-top"
+             style="width: 100%; height: 350px; object-fit: cover;">
+        {% else %}
+        <div class="alert alert-info text-center" role="alert" style="height: 350px; display: flex; align-items: center; justify-content: center;">
+            No image available for this event.
         </div>
+        {% endif %}
+        <div class="card-body text-center wide-poster-card-body" style="padding-bottom: 0.25rem;">
+            <h3 class="mb-1" style="font-weight: normal;">{{ first_event.title }}</h3>
+            <p class="mb-1">{{ first_event.date|date:"M d, Y" }}</p>
+            <p class="mb-1">{{ first_event.location }}</p>
+            <a href="{% url 'event_detail' first_event.pk %}" 
+               class="btn btn-sm btn-custom w-100 wide-poster-btn" 
+               style="margin-top: 0;">View Details</a>
+        </div>
+    </a>
+    <div style="margin-bottom: 20px;"></div>
+    {% endwith %}
+{% endif %}
+
+<!-- Search Bar -->
+<div class="mb-4 search-bar">
+    <form method="get" action="{% url 'home' %}" class="d-flex">
+        <input type="text" 
+               class="form-control" 
+               placeholder="Search events..." 
+               name="q" 
+               value="{{ request.GET.q }}" 
+               style="border: 2px solid #444;">
+        <button type="submit" class="btn btn-custom"><i class="fas fa-search"></i></button>
+    </form>
+</div>
 
         <!-- Events Grid -->
         <h4 class="mb-3">Upcoming Events</h4>
