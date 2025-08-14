@@ -21,16 +21,23 @@
         <!-- Big Banner for First Event -->
         {% if events %}
             {% with first_event=events.0 %}
-            <a href="{% url 'event_detail' first_event.pk %}" class="big-banner d-block mb-4">
+            <a href="{% url 'event_detail' first_event.pk %}" class="big-banner d-block mb-4 card event-card shadow-sm">
                 {% if first_event.image %}
                 <img src="{{ first_event.image.url }}" alt="{{ first_event.title }}"
-                     class="img-fluid"
+                     class="card-img-top"
                      style="width: 100%; height: 350px; object-fit: cover;">
                 {% else %}
-                <div class="alert alert-info text-center" role="alert">
+                <div class="alert alert-info text-center" role="alert" style="height: 350px; display: flex; align-items: center; justify-content: center;">
                     No image available for this event.
                 </div>
                 {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ first_event.title }}</h5>
+                    <p class="card-text small text-muted">
+                        <i class="fas fa-calendar me-2"></i>{{ first_event.date|date:"M d, Y" }}<br>
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ first_event.location }}
+                    </p>
+                </div>
             </a>
                         
             {% endwith %}
