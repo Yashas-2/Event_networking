@@ -4,14 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views.generic import ListView, DetailView
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.http import JsonResponse
 from django.contrib.auth.views import LoginView
 import json
-from django.contrib import messages
 from django.core.mail import send_mail
 from .models import Event, EventRegistration
-from .forms import RegistrationForm 
+from .forms import RegistrationForm
 from django.urls import reverse
 
 from .models import User, Event, Category, EventRegistration, EventFeedback, Message, EventSuggestion, Certificate,  Registration
@@ -74,13 +73,10 @@ class CustomLoginView(LoginView):
         messages.error(self.request, "Invalid username or password.")
         return super().form_invalid(form)
     
-from django.contrib import messages
-
 def clear_old_messages(request):
     storage = messages.get_messages(request)
     for _ in storage:
         pass  # This clears them
-
 
 
 
@@ -113,11 +109,31 @@ def register(request):
     })
 
 
+from datetime import timedelta
+from django.utils import timezone
+
 @login_required
 def home(request):
     """Home page showing featured events"""
+    now = timezone.now()
+    five_hours_ago = now - timedelta(hours=5)
+
     all_events = Event.objects.order_by('date')
-    events = [event for event in all_events if event.status == 'upcoming'][:6]
+    
+    # Filter events: upcoming OR completed within the last 5 hours
+    events = []
+    for event in all_events:
+        if event.status == 'upcoming' or event.status == 'ongoing':
+            events.append(event)
+        elif event.status == 'completed':
+            # Check if the event completed within the last 5 hours
+            event_end_time = event.start_time + timedelta(minutes=event.duration)
+            if event_end_time > five_hours_ago:
+                events.append(event)
+            
+    # Limit to 6 events
+    events = events[:6]
+    
     categories = Category.objects.all()
     return render(request, 'events/home.html', {'events': events, 'categories': categories})
 
@@ -204,8 +220,7 @@ def register_for_event(request, event_id):
             # Send confirmation email
             send_mail(
                 subject=f'Registration Confirmation for {event.title}',
-                message=f"""
-Hi {registration.name},
+                message=f"""Hi {registration.name},
 
 Thank you for registering for {event.title}!
 
@@ -230,29 +245,34 @@ Event Team
     return render(request, 'events/event_register_form.html', {'form': form, 'event': event})
 
 @login_required
-def profile_view(request):
-    user = request.user
-    
+def profile_view(request, user_id=None):
+    if user_id:
+        profile_user = get_object_or_404(User, id=user_id)
+    else:
+        profile_user = request.user
+
     # Initialize context with data common to all users
     context = {
-        'user': user,
-        'profile_form': UserProfileForm(instance=user),
+        'profile_user': profile_user,
     }
 
-    if user.user_type == 'organizer':
+    if profile_user == request.user:
+        context['profile_form'] = UserProfileForm(instance=profile_user)
+        if profile_user.user_type != 'organizer':
+             context['certificate_form'] = CertificateUploadForm(user=profile_user)
+
+
+    if profile_user.user_type == 'organizer':
         # For organizers, get the events they have organized
-        organized_events = Event.objects.filter(organizer=user).order_by('-created_at')
+        organized_events = Event.objects.filter(organizer=profile_user).order_by('-created_at')
         context['organized_events'] = organized_events
     else:
         # For participants, get their registrations and certificates
-        registrations = Registration.objects.filter(user=user).order_by('-registered_at')
-        certificates = Certificate.objects.filter(participant=user).order_by('-uploaded_at')
-        
-        form = CertificateUploadForm(user=user)
+        registrations = Registration.objects.filter(user=profile_user).order_by('-registered_at')
+        certificates = Certificate.objects.filter(participant=profile_user).order_by('-uploaded_at')
         
         context['registrations'] = registrations
         context['certificates'] = certificates
-        context['certificate_form'] = form
 
     return render(request, 'events/profile.html', context)
 
@@ -291,13 +311,6 @@ def upload_certificate(request):
     
     return redirect('profile')
 
-@login_required
-def delete_certificate(request, cert_id):
-    certificate = get_object_or_404(Certificate, id=cert_id, participant=request.user)
-    certificate.delete()
-    messages.success(request, "Certificate deleted successfully.")
-    return redirect('profile')
-
 
 @login_required
 def generate_cv(request):
@@ -313,20 +326,8 @@ def generate_cv(request):
     }
     return render(request, 'events/cv_template.html', context)
 
-@login_required
-def messaging_inbox(request):
-    """Messaging inbox"""
-    received_messages = Message.objects.filter(receiver=request.user)
-    sent_messages = Message.objects.filter(sender=request.user)
-    users = User.objects.exclude(id=request.user.id)
-    
-    context = {
-        'received_messages': received_messages,
-        'sent_messages': sent_messages,
-        'users': users,
-        'message_form': MessageForm(sender=request.user),
-    }
-    return render(request, 'events/messaging.html', context)
+
+
 
 @login_required
 def send_message(request):
@@ -338,29 +339,14 @@ def send_message(request):
             message.sender = request.user
             message.save()
             messages.success(request, 'Message sent successfully!')
+            # Redirect to the conversation with the receiver
+            return redirect('conversation', user_id=message.receiver.id)
         else:
             messages.error(request, 'Error sending message.')
+            # Redirect back to the inbox or a relevant page
+            return redirect('messaging_inbox')
     
     return redirect('messaging_inbox')
-
-@login_required
-def conversation_view(request, user_id):
-    """View conversation with specific user"""
-    other_user = get_object_or_404(User, id=user_id)
-    
-    conversation = Message.objects.filter(
-        Q(sender=request.user, receiver=other_user) |
-        Q(sender=other_user, receiver=request.user)
-    ).order_by('timestamp')
-    
-    # Mark messages as read
-    Message.objects.filter(sender=other_user, receiver=request.user, is_read=False).update(is_read=True)
-    
-    context = {
-        'other_user': other_user,
-        'conversation': conversation,
-    }
-    return render(request, 'events/conversation.html', context)
 
 @login_required
 def add_feedback(request, event_id):
@@ -496,47 +482,6 @@ def event_delete(request, pk):
     return render(request, 'events/event_confirm_delete.html', {'event': event})
 
 
-
-# from django.shortcuts import render, get_object_or_404
-# from django.core.mail import send_mail
-# from django.conf import settings
-# from .forms import SimpleRegistrationForm
-# from .models import Event
-
-# def event_registration(request, event_id):
-#     event = get_object_or_404(Event, id=event_id)
-
-#     if request.method == 'POST':
-#         form = SimpleRegistrationForm(request.POST)
-#         if form.is_valid():
-#             name = form.cleaned_data['name']
-#             email = form.cleaned_data['email']
-
-#             # Send confirmation email
-#             send_mail(
-#                 subject=f"You're registered for {event.title}",
-#                 message=f"Hi {name},\n\nThanks for registering for {event.title}!\nDate: {event.date}\nLocation: {event.location}\n\nSee you there!",
-#                 from_email=settings.DEFAULT_FROM_EMAIL,
-#                 recipient_list=[email],
-#                 fail_silently=False,
-#             )
-
-#             return render(request, 'events/event_confirm_detail.html', {'event': event, 'email': email})
-#     else:
-#         form = SimpleRegistrationForm()
-
-#     return render(request, 'events/event_registration.html', {'form': form, 'event': event})
-
-
-# views.py
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Registration
-
-from django.http import HttpResponse
-from .models import Registration
-
-from django.contrib import messages
 import logging
 logger = logging.getLogger(__name__)
 
