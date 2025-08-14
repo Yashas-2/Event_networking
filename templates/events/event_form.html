@@ -39,9 +39,16 @@
                                         <div class="invalid-feedback d-block">{{ error }}</div>
                                     {% endfor %}
                                     {% if field.value %}
-                                        <div class="d-flex align-items-center mt-2">
+                                        <div class="d-flex align-items-center mt-2" id="current-image-display">
                                             <span class="me-2">{{ field.value.name|cut:"event_posters/" }}</span>
+                                            <a href="{{ field.value.url }}" target="_blank" class="btn btn-sm btn-info me-2" title="View Image">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-danger" id="delete-image-btn" title="Delete Image">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </div>
+                                        <input type="hidden" name="{{ field.name }}-clear" id="{{ field.id_for_label }}-clear" value="false">
                                     {% endif %}
                                 </div>
                             {% elif field.name != "duration" %}

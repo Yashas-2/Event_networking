@@ -2,59 +2,83 @@
 
 {% block content %}
 
-<div class="row">
-    <!-- Sidebar for Categories -->
-    <div class="col-md-3 mb-4">
-        <h4 class="mb-3">Categories</h4>
-        <div class="list-group shadow-sm rounded">
-            {% for category in categories %}
-            <a href="{% url 'events_by_category' category.id %}" class="list-group-item list-group-item-action">
-                {{ category.name }}
-            </a>
-            {% endfor %}
+<!-- Toggle button for Categories sidebar (visible on small screens) -->
+<button class="btn btn-primary d-md-none mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#categoriesSidebar" aria-expanded="false" aria-controls="categoriesSidebar">
+    Toggle Categories
+</button>
+
+<div class="d-flex">
+    <!-- Categories Sidebar (Collapsible) -->
+    <div class="collapse d-md-block sidebar" id="categoriesSidebar" style="margin-left: 0;">
+        <div class="card card-body mb-4">
+            <h4 class="mb-3">Categories</h4>
+            <div class="list-group shadow-sm rounded">
+                {% for category in categories %}
+                <a href="{% url 'events_by_category' category.id %}" class="list-group-item list-group-item-action">
+                    {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="col-md-9">
-<!-- Big Banner for First Event -->
-{% if events %}
-    {% with first_event=events.0 %}
-    <a href="{% url 'event_detail' first_event.pk %}" class="big-banner d-block mb-4 card event-card shadow-sm">
-        {% if first_event.image %}
-        <img src="{{ first_event.image.url }}" alt="{{ first_event.title }}"
-             class="card-img-top"
-             style="width: 100%; height: 350px; object-fit: cover;">
-        {% else %}
-        <div class="alert alert-info text-center" role="alert" style="height: 350px; display: flex; align-items: center; justify-content: center;">
-            No image available for this event.
+    <div class="flex-grow-1 ms-md-4">
+        <!-- Event Carousel -->
+        {% if events %}
+        <div id="eventCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="5000">
+            <div class="carousel-indicators">
+                {% for event in events %}
+                <button type="button" data-bs-target="#eventCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+                {% endfor %}
+            </div>
+            <div class="carousel-inner">
+                {% for event in events %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    {% if event.image %}
+                    <div class="poster-container" style="max-width: 250px; margin: 0 auto;">
+                        <a href="{% url 'event_detail' event.pk %}" class="d-block text-decoration-none text-dark" style="width: 100%; height: 100%;">
+                            <img src="{{ event.image.url }}" alt="{{ event.title }}" style="width: 100%; height: 100%; object-fit: contain;">
+                        </a>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'event_detail' event.pk %}" class="d-block text-decoration-none text-dark">
+                        <div class="alert alert-info text-center d-flex align-items-center justify-content-center" role="alert" style="height: 350px;">
+                            No image available for this event.
+                        </div>
+                    </a>
+                    {% endif %}
+                    <div class="carousel-caption-below p-3 rounded" style="border-top: none;">
+                        <h3>{{ event.title }}</h3>
+                        <p>{{ event.date|date:"M d, Y" }} - {{ event.location }}</p>
+                        <a href="{% url 'event_detail' event.pk %}" class="btn btn-sm btn-custom">View Details</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#eventCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#eventCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
         {% endif %}
-        <div class="card-body text-center wide-poster-card-body" style="padding-bottom: 0.25rem;">
-            <h3 class="mb-1" style="font-weight: normal;">{{ first_event.title }}</h3>
-            <p class="mb-1">{{ first_event.date|date:"M d, Y" }}</p>
-            <p class="mb-1">{{ first_event.location }}</p>
-            <a href="{% url 'event_detail' first_event.pk %}" 
-               class="btn btn-sm btn-custom w-100 wide-poster-btn" 
-               style="margin-top: 0;">View Details</a>
-        </div>
-    </a>
-    <div style="margin-bottom: 20px;"></div>
-    {% endwith %}
-{% endif %}
 
-<!-- Search Bar -->
-<div class="mb-4 search-bar">
-    <form method="get" action="{% url 'home' %}" class="d-flex">
-        <input type="text" 
-               class="form-control" 
-               placeholder="Search events..." 
-               name="q" 
-               value="{{ request.GET.q }}" 
-               style="border: 2px solid #444;">
-        <button type="submit" class="btn btn-custom"><i class="fas fa-search"></i></button>
-    </form>
-</div>
+        <!-- Search Bar -->
+        <div class="mb-4 search-bar">
+            <form method="get" action="{% url 'home' %}" class="d-flex">
+                <input type="text" 
+                       class="form-control" 
+                       placeholder="Search events..." 
+                       name="q" 
+                       value="{{ request.GET.q }}" 
+                       style="border: 2px solid #444;">
+                <button type="submit" class="btn btn-custom"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
 
         <!-- Events Grid -->
         <h4 class="mb-3">Upcoming Events</h4>

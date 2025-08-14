@@ -19,6 +19,17 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'home' %}?category_name=Technical">Technical</a></li>
+                            <li><a class="dropdown-item" href="{% url 'home' %}?category_name=Non-Technical">Non-Technical</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'home' %}">All Events</a></li>
+                        </ul>
+                    </li>
                     {% block auth_nav_items %}
                         {% if user.is_authenticated %}
                             <li class="nav-item">

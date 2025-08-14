@@ -120,6 +120,13 @@ def home(request):
 
     all_events = Event.objects.order_by('date')
     
+    category_name = request.GET.get('category_name')
+    selected_category = False
+
+    if category_name:
+        all_events = all_events.filter(category__name=category_name)
+        selected_category = True
+
     # Filter events: upcoming OR completed within the last 5 hours
     events = []
     for event in all_events:
@@ -135,7 +142,7 @@ def home(request):
     events = events[:6]
     
     categories = Category.objects.all()
-    return render(request, 'events/home.html', {'events': events, 'categories': categories})
+    return render(request, 'events/home.html', {'events': events, 'categories': categories, 'selected_category': selected_category})
 
 class EventListView(LoginRequiredMixin, ListView):
     model = Event

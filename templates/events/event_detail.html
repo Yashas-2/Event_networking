@@ -9,7 +9,7 @@
     <!-- Event Info -->
     <div class="card">
       {% if event.image %}
-      <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}" style="max-height: 400px; object-fit: cover;">
+      <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}" style="max-height: 400px; object-fit: contain;">
       {% endif %}
       <div class="card-body">
         <h1 class="card-title">{{ event.title }}</h1>

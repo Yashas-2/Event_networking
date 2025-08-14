@@ -1,15 +1,40 @@
+/* Header Styling */
+.navbar-brand {
+    font-size: 1.8rem; /* Increase font size */
+    font-weight: bold; /* Make it bolder */
+}
+
+.nav-link {
+    font-size: 1.1rem; /* Increase font size for navigation links */
+}
+
 /* Buttons */
 .btn-custom {
     background: linear-gradient(135deg, #ff9966, #ff5e62);
-    border: none;
+    border: none !important;
+    border-top: none !important; /* Added for debugging */
+    border-bottom: none !important; /* Added for debugging */
     color: white;
     font-weight: bold;
     transition: all 0.3s ease;
+    outline: none !important;
+    box-shadow: 0 0 0 1px #ff9966 !important; /* Added to cover potential artifact */
+    border-radius: 0 !important; /* Added to remove potential rounding artifacts */
+    text-decoration: none !important; /* Added to remove any potential underline */
+    transform: translateZ(0); /* Added to force new rendering layer */
+    margin: -1px; /* Added to try to eliminate sub-pixel gaps */
 }
 .btn-custom:hover {
     background: linear-gradient(135deg, #ff5e62, #ff9966);
     transform: scale(1.05);
     color: white;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.btn-custom:focus {
+    outline: 0 !important;
+    box-shadow: none !important;
 }
 
 /* Custom File Input */
@@ -86,6 +111,14 @@
 
 .event-card {
     overflow: hidden; /* Ensures the scaled image doesn't overflow */
+    border-radius: 8px; /* Rounded corners for event cards */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: all 0.3s ease; /* Smooth transitions for hover effects */
+}
+
+.event-card:hover {
+    transform: translateY(-5px); /* Slight lift effect on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
 }
 
 .event-card img {
@@ -94,6 +127,21 @@
 
 .event-card img:hover {
     transform: scale(1.03);
+}
+
+/* Search Bar Spacing */
+.search-bar form .form-control {
+    padding-right: 15px; /* Add padding to the right of the input */
+}
+
+.search-bar form .btn {
+    margin-left: 10px; /* Add margin to the left of the search button */
+}
+
+/* Upcoming Events Header Spacing */
+h4.mb-3 { /* Targeting the specific h4 for Upcoming Events */
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
 /* Organizer Dashboard Button Colors */
@@ -255,4 +303,125 @@
     padding: 15px;
     border-top: 1px solid #ddd;
     background-color: #f5f5f5;
+}
+
+.poster-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f8f9fa; /* Match carousel-caption-below background */
+}
+
+.carousel-caption-below {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    background: none !important; /* New from user */
+    color: #333; /* Dark text */
+    text-align: center;
+    padding-top: 0.5rem !important; /* New from user */
+    padding-bottom: 15px;
+    margin-top: 0; /* Remove space from the image */
+    border-top: none !important; /* New from user */
+    box-shadow: none !important; /* New from user */
+}
+
+.carousel-caption-below::before {
+    content: none !important; /* New from user */
+}
+
+.carousel-caption-below h3 {
+    color: #333;
+}
+
+.carousel-caption-below p {
+    color: #666;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    opacity: 0.7; /* Ensure they are always visible */
+    width: 5%; /* Make them a bit wider for easier clicking */
+    transition: opacity 0.3s ease; /* Smooth transition for opacity */
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    opacity: 1; /* Full opacity on hover */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.3); /* Subtle dark background */
+    border-radius: 50%; /* Make them circular */
+    padding: 15px; /* Add some padding */
+    color: white; /* Ensure the icon is white */
+}
+
+/* Categories Section Styling */
+.list-group {
+    border: none; /* Remove default list-group border */
+}
+
+.list-group-item {
+    border: none; /* Remove default list-group-item border */
+    margin-bottom: 5px; /* Add space between items */
+    border-radius: 5px; /* Slightly rounded corners */
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f0f0f0; /* Light background on hover */
+    transform: translateX(5px); /* Slight slide effect on hover */
+}
+
+.list-group-item.active {
+    background-color: #ff5e62 !important; /* Use custom button color for active */
+    color: white !important;
+}
+
+.list-group-item.active:hover {
+    background-color: #ff9966 !important; /* Darker custom button color on hover for active */
+}
+
+.list-group-item a {
+    text-decoration: none; /* Remove underline from links */
+    color: inherit; /* Inherit color from parent */
+    display: block; /* Make the whole item clickable */
+    padding: 10px 15px; /* Adjust padding */
+}
+
+.list-group-item h4 {
+    font-size: 1.2rem; /* Adjust heading size */
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: 250px; /* Fixed width for the sidebar */
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    /* Add transition for smooth collapse/expand */
+    transition: width 0.3s ease, margin-right 0.3s ease;
+}
+
+/* Adjust main content margin when sidebar is visible on medium and larger screens */
+@media (min-width: 768px) {
+    .ms-md-4 {
+        margin-left: 1.5rem !important; /* Default Bootstrap margin */
+    }
+
+    /* When sidebar is collapsed, main content takes full width */
+    .collapse:not(.show) + .flex-grow-1 {
+        margin-left: 0 !important;
+    }
+}
+
+.carousel-caption-below .btn-custom {
+    padding: 8px 16px; /* Slightly increased padding */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+    border-radius: 5px !important; /* Add some border-radius back */
 }
