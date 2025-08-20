@@ -149,3 +149,6 @@ class Registration(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='registrations_real')
     registered_at = models.DateTimeField(auto_now_add=True)
     attended = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('event', 'user')

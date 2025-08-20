@@ -489,7 +489,7 @@ def event_registrations(request, event_id):
         messages.error(request, 'Access denied.')
         return redirect('home')
     
-    registrations = EventRegistration.objects.filter(event=event).order_by('-registered_at')
+    registrations = Registration.objects.filter(event=event).order_by('-registered_at')
     
     context = {
         'event': event,

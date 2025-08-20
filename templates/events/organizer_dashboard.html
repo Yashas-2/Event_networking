@@ -47,9 +47,7 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{% if event.status == 'upcoming' %}primary{% elif event.status == 'ongoing' %}warning text-dark{% else %}success{% endif %}">
-                                        {{ event.get_status_display }}
-                                    </span>
+                                    <span class="text-black">{{ event.status }}</span>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">

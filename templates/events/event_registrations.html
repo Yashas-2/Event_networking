@@ -40,25 +40,25 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        {% if registration.participant.profile_picture %}
-                                            <img src="{{ registration.participant.profile_picture.url }}" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture">
+                                        {% if registration.user.profile_picture %}
+                                            <img src="{{ registration.user.profile_picture.url }}" class="rounded-circle me-2" width="40" height="40" alt="Profile Picture">
                                         {% else %}
                                             <i class="fas fa-user-circle fa-2x text-muted me-2"></i>
                                         {% endif %}
                                         <div>
                                             <strong>
-                                                <a href="{% url 'view_profile' registration.participant.id %}">
-                                                    {{ registration.participant.get_full_name|default:registration.participant.username }}
+                                                <a href="{% url 'view_profile' registration.user.id %}">
+                                                    {{ registration.user.get_full_name|default:registration.user.username }}
                                                 </a>
                                             </strong>
-                                            {% if registration.participant.bio %}
-                                                <br><small class="text-muted">{{ registration.participant.bio|truncatewords:10 }}</small>
+                                            {% if registration.user.bio %}
+                                                <br><small class="text-muted">{{ registration.user.bio|truncatewords:10 }}</small>
                                             {% endif %}
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ registration.participant.email }}</td>
-                                <td>{{ registration.participant.phone|default:"-" }}</td>
+                                <td>{{ registration.user.email }}</td>
+                                <td>{{ registration.user.phone|default:"-" }}</td>
                                 <td>{{ registration.registered_at|date:"M d, Y g:i A" }}</td>
                                 <td>
                                     {% if registration.attended %}
@@ -69,7 +69,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{% url 'conversation' registration.participant.id %}" class="btn btn-custom" title="Send Message">
+                                        <a href="{% url 'conversation' registration.user.id %}" class="btn btn-custom" title="Send Message">
                                             <i class="fas fa-envelope"></i>
                                         </a>
                                         {% if not registration.attended %}
@@ -113,9 +113,9 @@ function exportToCSV() {
     csvContent += "Name,Email,Phone,Registration Date,Attendance Status\n";
     
     {% for registration in registrations %}
-    csvContent += "{{ registration.participant.get_full_name|default:registration.participant.username|escapejs }},";
-    csvContent += "{{ registration.participant.email|escapejs }},";
-    csvContent += "{{ registration.participant.phone|default:''|escapejs }},";
+    csvContent += "{{ registration.user.get_full_name|default:registration.user.username|escapejs }},";
+    csvContent += "{{ registration.user.email|escapejs }},";
+    csvContent += "{{ registration.user.phone|default:''|escapejs }},";
     csvContent += "{{ registration.registered_at|date:'M d, Y g:i A'|escapejs }},";
     csvContent += "{% if registration.attended %}Attended{% else %}Registered{% endif %}\n";
     {% endfor %}
