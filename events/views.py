@@ -13,7 +13,8 @@ from .models import Event, EventRegistration
 from .forms import RegistrationForm
 from django.urls import reverse
 
-from .models import User, Event, Category, EventRegistration, EventFeedback, Message, EventSuggestion, Certificate,  Registration
+
+from .models import User, Event, Category, EventRegistration, EventFeedback, Message, EventSuggestion, Certificate,  Registration, CustomField
 from .forms import UserRegistrationForm, UserProfileForm, EventFeedbackForm, MessageForm, EventSuggestionForm, CertificateUploadForm, EventForm
 # Install: pip install openai
 # Add this function to views.py for real AI integration:
@@ -213,18 +214,35 @@ class EventDetailView(LoginRequiredMixin, DetailView):
 
 @login_required
 def register_for_event(request, event_id):
-    """Register user for an event with name and email input"""
+    """Register user for an event with dynamic fields including file uploads."""
     event = get_object_or_404(Event, id=event_id)
 
     if request.method == 'POST':
-        form = RegistrationForm(request.POST)
+        form = RegistrationForm(request.POST, request.FILES, event=event)
         if form.is_valid():
-            registration = form.save(commit=False)
-            registration.event = event
-            registration.user = request.user  # ✅ This line links the registration to the logged-in user
+            registration = Registration(
+                event=event,
+                user=request.user,
+                name=form.cleaned_data['name'],
+                email=form.cleaned_data['email']
+            )
+
+            responses = {}
+
+            for field in event.custom_fields.all():
+                value = form.cleaned_data.get(field.label)
+
+                if field.field_type == 'file' and value:
+                    responses[field.label] = {
+                        'name': value.name,
+                        'url': value.url if hasattr(value, 'url') else ''
+                    }
+                else:
+                    responses[field.label] = value
+
+            registration.responses = responses
             registration.save()
 
-            # Send confirmation email
             send_mail(
                 subject=f'Registration Confirmation for {event.title}',
                 message=f"""Hi {registration.name},
@@ -239,7 +257,7 @@ We look forward to seeing you!
 Best regards,
 Event Team
 """,
-                from_email='yashashassan271125@gmail.com',
+                from_email='your_email@example.com',
                 recipient_list=[registration.email],
                 fail_silently=False,
             )
@@ -247,7 +265,7 @@ Event Team
             messages.success(request, f'Registration successful! Confirmation sent to {registration.email}')
             return redirect('event_detail', pk=event.id)
     else:
-        form = RegistrationForm()
+        form = RegistrationForm(event=event)
 
     return render(request, 'events/event_register_form.html', {'form': form, 'event': event})
 
@@ -497,25 +515,54 @@ def event_registrations(request, event_id):
     }
     return render(request, 'events/event_registrations.html', context)
 
+BUILTIN_FIELDS = {
+    "Phone Number": "text",
+    "College Name": "text",
+    "Department": "text",
+    "Year of Study": "number",
+    "ID Card": "file",
+}
 @login_required
 def event_create(request):
-    """Create a new event (organizers only)"""
-    if request.user.user_type != 'organizer':
-        messages.error(request, 'Access denied. Organizers only.')
-        return redirect('home')
-
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES)
         if form.is_valid():
-            event = form.save(commit=False)
-            event.organizer = request.user
-            event.save()
-            # Ensure media directory has write permissions for the web server user.
-            messages.success(request, 'Event created successfully!')
-            return redirect('organizer_dashboard')
+            event = form.save(commit=False)  # Don't save to DB yet
+            event.organizer = request.user   # Assign the logged-in user
+            event.save()     
+
+            # 1. Save built-in fields (checkboxes)
+            for field_label, field_type in BUILTIN_FIELDS.items():
+                if request.POST.get(field_label):  # checkbox ticked
+                    CustomField.objects.create(
+                        event=event,
+                        label=field_label,
+                        field_type=field_type,
+                        required=True  # these are always required if chosen
+                    )
+
+            # 2. Save extra custom fields
+            custom_labels = request.POST.getlist('custom_label[]')
+            custom_types = request.POST.getlist('custom_type[]')
+            custom_required = request.POST.getlist('custom_required[]')
+
+            for label, ftype, req in zip(custom_labels, custom_types, custom_required):
+                if label.strip():
+                    CustomField.objects.create(
+                        event=event,
+                        label=label,
+                        field_type=ftype,
+                        required=(req == 'on')
+                    )
+
+            return redirect('event_list')
     else:
         form = EventForm()
-    return render(request, 'events/event_form.html', {'form': form, 'action': 'create'})
+
+    return render(request, 'events/event_form.html', {
+        'form': form,
+        'builtin_fields': BUILTIN_FIELDS
+    })
 
 @login_required
 def event_update(request, pk):
@@ -527,16 +574,39 @@ def event_update(request, pk):
 
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES, instance=event)
-        print(f"Request FILES: {request.FILES}")
         if form.is_valid():
-            event = form.save(commit=False)
-            event.save()
-            # Ensure media directory has write permissions for the web server user.
+            event = form.save()
+
+            # --- Handle Custom Fields ---
+            event.custom_fields.all().delete()
+
+            labels = request.POST.getlist('custom_label[]')
+            types = request.POST.getlist('custom_type[]')
+            required_flags = request.POST.getlist('custom_required[]')
+
+            for i in range(len(labels)):
+                label = labels[i].strip()
+                field_type = types[i].strip() if i < len(types) else 'text'
+                required = i < len(required_flags) and required_flags[i] == 'on'
+
+                if label:
+                    CustomField.objects.create(
+                        event=event,
+                        label=label,
+                        field_type=field_type,
+                        required=required
+                    )
+
             messages.success(request, 'Event updated successfully!')
             return redirect('organizer_dashboard')
     else:
         form = EventForm(instance=event)
-    return render(request, 'events/event_form.html', {'form': form, 'action': 'update', 'event': event})
+
+    return render(request, 'events/event_form.html', {
+        'form': form,
+        'action': 'update',
+        'event': event
+    })
 
 @login_required
 def event_delete(request, pk):
@@ -569,3 +639,16 @@ def cancel_registration(request, event_id):
 
     # ✅ Redirect back to event detail page
     return redirect('event_detail', pk=event.id)
+
+@login_required
+def participant_detail(request, pk):
+    registration = get_object_or_404(Registration, pk=pk)
+
+    # Optional: restrict to only organizer who created the event
+    if request.user != registration.event.organizer:
+        messages.error(request, "Access denied.")
+        return redirect('home')
+
+    return render(request, 'events/participant_detail.html', {
+        'registration': registration
+    })

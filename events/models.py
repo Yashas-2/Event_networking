@@ -69,12 +69,28 @@ class Event(models.Model):
     def registered_count(self):
         return self.registrations_real.count()
 
+FIELD_TYPES = (
+    ('text', 'Text'),
+    ('number', 'Number'),
+    ('file', 'File'),
+    ('email', 'Email'),
+    ('url', 'Url'),
+)
+
+class CustomField(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="custom_fields")
+    label = models.CharField(max_length=100)
+    field_type = models.CharField(max_length=20, choices=FIELD_TYPES, default='text')
+    required = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.label} ({self.event.title})"        
+
 class EventRegistration(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='registrations')
     participant = models.ForeignKey(User, on_delete=models.CASCADE)
     registered_at = models.DateTimeField(auto_now_add=True)
     attended = models.BooleanField(default=False)
-    
     class Meta:
         unique_together = ('event', 'participant')
     
@@ -149,6 +165,14 @@ class Registration(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='registrations_real')
     registered_at = models.DateTimeField(auto_now_add=True)
     attended = models.BooleanField(default=False)
+    responses = models.JSONField(default=dict)
+    # store dynamic responses as JSON
+    uploaded_file = models.FileField(upload_to='registration_files/', null=True, blank=True)
+
+    registered_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.event.title}"
 
     class Meta:
         unique_together = ('event', 'user')

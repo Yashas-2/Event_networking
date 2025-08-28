@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import  EventFeedback, Message, EventSuggestion, Certificate, Event, Registration
+from .models import  EventFeedback, Message, EventSuggestion, Certificate, Event, Registration, CustomField
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
@@ -104,6 +104,26 @@ class EventForm(forms.ModelForm):
 
 
 class RegistrationForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        event = kwargs.pop('event')
+        super().__init__(*args, **kwargs)
+
+        # Default fields
+        self.fields['name'] = forms.CharField(required=True)
+        self.fields['email'] = forms.EmailField(required=True)
+
+        # Add dynamic fields
+        for field in event.custom_fields.all():
+            if field.field_type == 'text':
+                self.fields[field.label] = forms.CharField(required=field.required)
+            elif field.field_type == 'number':
+                self.fields[field.label] = forms.IntegerField(required=field.required)
+            elif field.field_type == 'file':
+                self.fields[field.label] = forms.FileField(required=field.required)
+            elif field.field_type == 'email':
+                self.fields[field.label] = forms.EmailField(required=field.required)
+            elif field.field_type == 'url':
+                self.fields[field.label] = forms.UrlField(required=field.required)    
     class Meta:
         model = Registration
         fields = ['name', 'email']

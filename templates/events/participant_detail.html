@@ -1,0 +1,43 @@
+<!-- participant_detail.html -->
+
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/_back_button.html' %}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h2 class="mb-0">{{ registration.name }} - Details</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Email:</strong> {{ registration.email }}</p>
+
+            {% if registration.responses %}
+                {% for key, value in registration.responses.items %}
+                    <p><strong>{{ key }}:</strong>
+                        {% if value.name %}  {# for file fields #}
+                            <a href="{{ value.url }}" target="_blank">{{ value.name }}</a>
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                    </p>
+                {% endfor %}
+            {% else %}
+                <p>No additional details provided.</p>
+            {% endif %}
+
+            <p><strong>Registration Date:</strong> {{ registration.created_at|date:"d M Y, H:i" }}</p>
+            <p><strong>Attendance:</strong> 
+                {% if registration.attended %}
+                    ✅ Attended
+                {% else %}
+                    ❌ Not Marked
+                {% endif %}
+            </p>
+
+            <a href="{% url 'event_list' %}" class="btn btn-danger">Back to Events</a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

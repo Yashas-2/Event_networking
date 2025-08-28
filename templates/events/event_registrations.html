@@ -47,9 +47,10 @@
                                         {% endif %}
                                         <div>
                                             <strong>
-                                                <a href="{% url 'view_profile' registration.user.id %}">
+                                                <a href="{% url 'participant_detail' registration.id %}">
                                                     {{ registration.user.get_full_name|default:registration.user.username }}
                                                 </a>
+
                                             </strong>
                                             {% if registration.user.bio %}
                                                 <br><small class="text-muted">{{ registration.user.bio|truncatewords:10 }}</small>

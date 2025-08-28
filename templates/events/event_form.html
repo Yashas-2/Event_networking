@@ -24,6 +24,7 @@
                             </div>
                         {% endif %}
                         
+                        {# Default Event Fields #}
                         {% for field in form %}
                             {% if field.name == "image" %}
                                 <div class="mb-3">
@@ -38,18 +39,6 @@
                                     {% for error in field.errors %}
                                         <div class="invalid-feedback d-block">{{ error }}</div>
                                     {% endfor %}
-                                    {% if field.value %}
-                                        <div class="d-flex align-items-center mt-2" id="current-image-display">
-                                            <span class="me-2">{{ field.value.name|cut:"event_posters/" }}</span>
-                                            <a href="{{ field.value.url }}" target="_blank" class="btn btn-sm btn-info me-2" title="View Image">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-danger" id="delete-image-btn" title="Delete Image">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                        <input type="hidden" name="{{ field.name }}-clear" id="{{ field.id_for_label }}-clear" value="false">
-                                    {% endif %}
                                 </div>
                             {% elif field.name != "duration" %}
                                 <div class="mb-3">
@@ -81,9 +70,25 @@
                                 </div>
                             </div>
                         </div>
-
                         <input type="hidden" name="duration" id="duration">
 
+                        <!-- ✅ Additional Participant Details -->
+                        <hr>
+                        <h4>Additional Participant Details</h4>
+                        <p class="text-muted">Select the fields you want participants to fill:</p>
+                        <div class="mb-3">
+                            <label><input type="checkbox" name="Phone Number"> Phone Number</label><br>
+                            <label><input type="checkbox" name="College Name"> College Name</label><br>
+                            <label><input type="checkbox" name="Department"> Department</label><br>
+                            <label><input type="checkbox" name="Year of Study"> Year of Study</label><br>
+                            <label><input type="checkbox" name="ID Card"> ID Card (Upload)</label><br>
+                        </div>
+
+                        <h5>Add Custom Fields</h5>
+                        <div id="custom-fields"></div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addField()">+ Add Custom Field</button>
+
+                        <br><br>
                         <button type="submit" class="btn btn-custom w-100 mt-3">
                             {% if action == 'create' %}Create Event{% else %}Update Event{% endif %}
                         </button>
@@ -98,23 +103,41 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const eventDuration = {{ event.duration|default:0 }};
-        if (eventDuration > 0) {
-            const hours = Math.floor(eventDuration / 60);
-            const minutes = eventDuration % 60;
-            document.getElementById('hours').value = hours;
-            document.getElementById('minutes').value = minutes;
-        }
+        {% if event.duration %}
+        const eventDuration = {{ event.duration }};
+        const hours = Math.floor(eventDuration / 60);
+        const minutes = eventDuration % 60;
+        document.getElementById('hours').value = hours;
+        document.getElementById('minutes').value = minutes;
+        {% endif %}
     });
 
     document.getElementById('event-form').addEventListener('submit', function(e) {
         const hours = parseInt(document.getElementById('hours').value) || 0;
         const minutes = parseInt(document.getElementById('minutes').value) || 0;
-
-        // Convert total duration to minutes
-        const totalMinutes = hours * 60 + minutes;
-        document.getElementById('duration').value = totalMinutes;
+        document.getElementById('duration').value = (hours * 60) + minutes;
     });
+
+    function addField() {
+        let container = document.getElementById("custom-fields");
+        let fieldHTML = `
+            <div class="custom-field mb-2">
+                <input type="text" name="custom_label[]" placeholder="Field Label" required>
+                <select name="custom_type[]">
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="email">Email</option>
+                    <option value="url">Url</option>
+                    <option value="file">File Upload</option>
+                </select>
+                <label>
+                    <input type="checkbox" name="custom_required[]" value="on"> Required
+                </label>
+                <button type="button" class="btn btn-sm btn-danger" onclick="this.parentNode.remove()">Remove</button>
+            </div>
+        `;
+        container.insertAdjacentHTML("beforeend", fieldHTML);
+    }
 </script>
 {% endblock %}
 {% endblock %}
