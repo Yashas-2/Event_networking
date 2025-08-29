@@ -13,7 +13,10 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Event Networking</a>
+            <a class="navbar-brand nexvo-brand" href="/">
+                <img src="{% static 'images/WhatsApp_Image_2025-08-23_at_22.23.04_c34e1399-removebg-preview.jpeg' %}" alt="Nexvo Logo" width="50" height="50">
+                <span>Nexvo</span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -40,14 +43,7 @@
                             </li>
                         {% endif %}
                     {% endblock %}
-                    {% if not user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">Register</a>
-                        </li>
-                    {% endif %}
+                    
                 </ul>
             </div>
         </div>

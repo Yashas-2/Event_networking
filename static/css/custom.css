@@ -425,3 +425,18 @@ h4.mb-3 { /* Targeting the specific h4 for Upcoming Events */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
     border-radius: 5px !important; /* Add some border-radius back */
 }
+
+/* Nexvo Brand Styling */
+.nexvo-brand {
+    display: flex;
+    align-items: center;
+}
+
+.nexvo-brand img {
+    margin-right: 10px;
+}
+
+.nexvo-brand span {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
